@@ -1,1 +1,1 @@
-# hospital-calendar
+# nyuta-schedule
