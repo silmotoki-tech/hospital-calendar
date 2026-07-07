@@ -371,13 +371,17 @@
     min-height:30px;
     margin-top:4px;
   }
-  .cell-chips:empty::after{
-    content:"＋";
+  .add-more-btn{
     display:block;
     text-align:center;
-    font-size:14px;
+    font-size:13px;
+    font-weight:700;
     color:#C7C3B8;
+    padding:2px 0;
+    cursor:pointer;
+    border-radius:4px;
   }
+  .add-more-btn:active{ background:#F0EEE7; }
 
   .chip{
     display:block;
@@ -1555,13 +1559,25 @@
         if(orderDiff !== 0) return orderDiff;
         return (a.label||'').localeCompare(b.label||'', 'ja');
       });
-    container.innerHTML = dayEvents.map(chipHTML).join('');
+    // A trailing "+" is always rendered as its own element (not just via a
+    // CSS :empty rule), so a day that's already packed with entries still
+    // has a visible, clickable spot to add one more — previously the "+"
+    // only ever showed when the cell had zero events, so a busy day left no
+    // way to add anything further.
+    container.innerHTML = dayEvents.map(chipHTML).join('') + '<span class="add-more-btn">＋</span>';
     container.querySelectorAll('.chip').forEach(chipEl=>{
       chipEl.addEventListener('click', (e)=>{
         e.stopPropagation();
         openEditModal(chipEl.dataset.id);
       });
     });
+    const addBtn = container.querySelector('.add-more-btn');
+    if(addBtn){
+      addBtn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        openAddModal(dateKey);
+      });
+    }
   }
 
   // ---------- infinite scroll ----------
