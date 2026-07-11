@@ -22,21 +22,21 @@
     --gold: #C99A3B;
     --gold-soft: #FBF1DC;
 
-    --c-surgery: #1F6F62;
-    --c-surgery-bg: #E2EFEA;
-    --c-surgery-bg-strong: #CFE6DD;
+    --c-surgery: #2A5F9E;
+    --c-surgery-bg: #E4ECF7;
+    --c-surgery-bg-strong: #CFDDF0;
 
-    --c-exam: #C97A1F;
-    --c-exam-bg: #FBEDDD;
-    --c-exam-bg-strong: #F5DBB8;
+    --c-exam: #2E8B57;
+    --c-exam-bg: #E2F1E8;
+    --c-exam-bg-strong: #C9E5D4;
 
     --c-other: #45568F;
     --c-other-bg: #E6E9F3;
     --c-other-bg-strong: #D3D9EE;
 
-    --c-dayoff: #8A8377;
-    --c-dayoff-bg: #ECE9E2;
-    --c-dayoff-bg-strong: #DFDACD;
+    --c-dayoff: #B8952E;
+    --c-dayoff-bg: #FBF3DC;
+    --c-dayoff-bg-strong: #F5E5B8;
 
     --c-training: #7A4FA3;
     --c-training-bg: #EFE7F5;
@@ -165,6 +165,18 @@
   .sync-dot.err{ background:#C24B43; }
   @keyframes pulse{ 0%,100%{opacity:1;} 50%{opacity:.3;} }
 
+  .btn-spinner{
+    display:inline-block;
+    width:13px;
+    height:13px;
+    border:2px solid rgba(255,255,255,0.4);
+    border-top-color:#fff;
+    border-radius:50%;
+    animation:btn-spin .7s linear infinite;
+    margin-right:2px;
+  }
+  @keyframes btn-spin{ to{ transform:rotate(360deg); } }
+
   /* ---------- Uncaught app error banner (catch-all safety net) ---------- */
   #appErrorBanner{
     display:none;
@@ -229,30 +241,6 @@
     background:#8C2E26;
     color:#fff;
     border-color:#8C2E26;
-    padding:6px 12px;
-    font-size:12px;
-  }
-
-  /* ---------- Archive overdue banner ---------- */
-  #archiveWarnBanner{
-    display:none;
-    flex:0 0 auto;
-    background:#FBEFD8;
-    border-bottom:1px solid #E8CC8C;
-    color:#7A5A12;
-    font-size:12.5px;
-    font-weight:600;
-    padding:9px 14px;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-    z-index:34;
-  }
-  #archiveWarnBanner.show{ display:flex; }
-  #archiveWarnBanner .btn{
-    background:#7A5A12;
-    color:#fff;
-    border-color:#7A5A12;
     padding:6px 12px;
     font-size:12px;
   }
@@ -331,27 +319,31 @@
   .cell-chips{
     flex:1 1 auto;
     display:flex;
-    flex-direction:column;
+    flex-direction:row;
+    flex-wrap:wrap;
+    align-content:flex-start;
     gap:3px;
     cursor:pointer;
     min-height:30px;
     margin-top:4px;
   }
   .add-more-btn{
-    display:block;
-    text-align:center;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
     font-size:13px;
     font-weight:700;
     color:#C7C3B8;
-    padding:2px 0;
+    padding:2px 6px;
     cursor:pointer;
     border-radius:4px;
   }
   .add-more-btn:active{ background:#F0EEE7; }
 
   .chip{
-    display:block;
-    width:100%;
+    display:inline-flex;
+    align-items:center;
+    max-width:100%;
     white-space:normal;
     word-break:break-word;
     padding:3px 5px;
@@ -663,10 +655,7 @@
       <div class="header-actions">
         <span class="sync-note"><span class="sync-dot" id="syncDot"></span><span id="syncText">同期済み</span></span>
         <button class="btn ghost" id="btnRefresh" title="更新">⟳ 更新</button>
-        <span class="manage-btn-wrap">
-          <button class="btn ghost" id="btnManage">管理</button>
-          <span class="warn-dot" id="manageWarnDot" style="display:none;"></span>
-        </span>
+        <button class="btn ghost" id="btnManage">管理</button>
         <button class="btn" id="btnToday">今日</button>
       </div>
     </div>
@@ -698,14 +687,6 @@
     </span>
   </div>
 
-  <div id="archiveWarnBanner">
-    <span id="archiveWarnText">⚠ 古いデータの整理（アーカイブ）が必要です。</span>
-    <span style="display:flex; gap:6px; flex:0 0 auto;">
-      <button class="btn" id="btnArchiveBannerOpen">今すぐ整理する</button>
-      <button class="btn ghost icon" id="btnDismissArchiveWarn" title="閉じる">×</button>
-    </span>
-  </div>
-
   <div id="calendar">
     <div id="weeksContainer"></div>
     <div id="sentinel">読み込み中…</div>
@@ -719,12 +700,12 @@
     <h2 id="sheetTitle">予定を追加</h2>
 
     <div class="cat-picker" id="catPicker">
+      <div class="cat-pill cat-clinic" data-cat="clinic">診療日</div>
+      <div class="cat-pill cat-dayoff" data-cat="dayoff">休み</div>
+      <div class="cat-pill cat-training" data-cat="training">研修</div>
       <div class="cat-pill cat-surgery" data-cat="surgery">オペ</div>
       <div class="cat-pill cat-exam" data-cat="exam">検査</div>
       <div class="cat-pill cat-other" data-cat="other">その他</div>
-      <div class="cat-pill cat-training" data-cat="training">研修</div>
-      <div class="cat-pill cat-dayoff" data-cat="dayoff">休み</div>
-      <div class="cat-pill cat-clinic" data-cat="clinic">診療日</div>
     </div>
 
     <div class="field">
@@ -740,6 +721,7 @@
         <input type="text" id="fLabel" placeholder="例）ポチ" style="flex:1; min-width:0;">
         <div class="preset-row" id="speciesRow" style="flex:0 0 auto; margin:0; flex-wrap:nowrap;"></div>
       </div>
+      <div class="preset-row" id="otherQuickRow" style="display:none;"></div>
       <div id="vetRow" style="display:none; flex-direction:column; gap:8px;"></div>
       <div id="dayoffPeriodWrap" style="display:none;">
         <div class="vet-group-label period-label">時間帯</div>
@@ -766,6 +748,11 @@
     <div class="field">
       <label id="labelMemo">メモ（任意）</label>
       <textarea id="fMemo" placeholder="補足事項があれば"></textarea>
+    </div>
+
+    <div class="field" id="fieldRepeat" style="display:none;">
+      <label>繰り返し（毎週同じ曜日に登録）</label>
+      <div class="preset-row" id="repeatRow"></div>
     </div>
 
     <div class="field-error" id="formError"></div>
@@ -808,14 +795,6 @@
 <div class="overlay" id="manageOverlay">
   <div class="sheet" id="manageSheet">
     <h2>データ管理</h2>
-
-    <div class="manage-section">
-      <h3>古いデータの整理（アーカイブ）</h3>
-      <p class="desc">60日より前のゴミ箱・バックアップ記録をまとめてファイルに書き出し、アプリ内からは削除して軽くします。書き出したファイルはGoogleドライブなどに保管してください。</p>
-      <div id="archiveWarning" style="display:none; font-size:12px; font-weight:700; color:#B2433C; margin-bottom:8px;"></div>
-      <div id="archiveLastRun" style="font-size:11px; color:var(--ink-soft); margin-bottom:8px;"></div>
-      <button class="btn" id="btnArchiveOld" style="width:100%;justify-content:center;">60日より前のデータをアーカイブして外部保存</button>
-    </div>
 
     <div class="manage-section">
       <h3>ゴミ箱</h3>
@@ -1003,26 +982,27 @@
   const STORAGE_KEY = 'schedule-events';
   const FILTER_KEY = 'category-filters';
   const CATS = {
+    clinic:   { label:'診療日',      cls:'cat-clinic' },
+    dayoff:   { label:'獣医師の休み', cls:'cat-dayoff' },
+    training: { label:'研修・実習',   cls:'cat-training' },
     surgery:  { label:'オペ',        cls:'cat-surgery' },
     exam:     { label:'検査',        cls:'cat-exam' },
-    other:    { label:'その他の予定', cls:'cat-other' },
-    training: { label:'研修・実習',   cls:'cat-training' },
-    dayoff:   { label:'獣医師の休み', cls:'cat-dayoff' },
-    clinic:   { label:'診療日',      cls:'cat-clinic' }
+    other:    { label:'その他の予定', cls:'cat-other' }
   };
   const WD = ['日','月','火','水','木','金','土'];
 
   const PRESETS = {
-    surgery: ['cast','spay','スケーリング'],
-    exam: ['全スク','胸部セット','腹部セット','腹部エコー','心エコー']
+    surgery: ['cast','spay','スケ','抜歯','マス切'],
+    exam: ['全ス','胸ス','腹ス','腹E','心E','血液','E','脾E','肝E','ACTH','UT','BP']
   };
-  const CLINIC_OPTIONS = ['休診日','午前休診','午後休診','予約診療日'];
+  const CLINIC_OPTIONS = ['休診日','午前休診','午後休診','予約診療日','循環器診療'];
   const TRAINEE_KINDS = ['獣医師','看護師'];
   const VET_GROUPS = [
     { label:'獣医師', names:['院長','大辻','川邉','齋藤','横井','德永'] },
-    { label:'看護師', names:['種田','竹内','神子島','大澤','川合','嶋本','道野'] }
+    { label:'看護師', names:['種田','竹内','神子島','大澤','川合','嶋本','道野','高嶋'] }
   ];
   const DAYOFF_PERIODS = ['午前','午後','全日'];
+  const REPEAT_WEEK_OPTIONS = [4, 8, 12];
 
   let events = [];               // [{id,date,category,time,vet,label,sub,room,species,memo}]
   let filters = { surgery:true, exam:true, other:true, dayoff:true };
@@ -1476,7 +1456,14 @@
     }
     text += escapeHtml(ev.label || '(無題)');
     if(ev.species) text += '('+escapeHtml(ev.species)+')';
-    if(ev.category !== 'dayoff' && ev.sub) text += '・'+escapeHtml(ev.sub);
+    // "その他" with staff attached (e.g. 面談：院長＋大辻＋齋藤) uses a colon,
+    // to read as "content: who's involved" rather than the "・" used
+    // elsewhere for patient sub-details.
+    if(ev.category === 'other' && ev.sub){
+      text += '：'+escapeHtml(ev.sub);
+    } else if(ev.category !== 'dayoff' && ev.sub){
+      text += '・'+escapeHtml(ev.sub);
+    }
     // dayoff period: only call out 午前/午後 explicitly; 全日 is the default
     // and adding it to every all-day entry would just be noise.
     if(ev.category === 'dayoff' && ev.dayoffPeriod && ev.dayoffPeriod !== '全日'){
@@ -1497,7 +1484,7 @@
   function fillChipsForDate(dateKey){
     const container = dayChipEls[dateKey];
     if(!container) return;
-    const CATEGORY_ORDER = { clinic:0, dayoff:1, other:2, training:3, surgery:4, exam:5 };
+    const CATEGORY_ORDER = { clinic:0, dayoff:1, training:2, surgery:3, exam:4, other:5 };
     const dayEvents = events
       .filter(e=>e.date===dateKey && !e.deleted)
       .sort((a,b)=>{
@@ -1554,10 +1541,11 @@
   // ---------- modal ----------
   let pickedCat = 'surgery';
   let pickedSpecies = '';
-  let pickedVet = '';
+  let pickedVets = []; // multi-select: several staff can be marked off in one action
   let pickedClinic = '';
   let pickedTraineeKind = '';
   let pickedDayoffPeriod = '全日';
+  let pickedRepeatWeeks = 0; // 0 = no repeat (single entry only)
 
   function setCat(cat){
     pickedCat = cat;
@@ -1585,8 +1573,19 @@
     // the main label input+its wrapper
     document.getElementById('fieldLabel').style.display = isClinic ? 'none' : 'block';
     document.getElementById('fLabel').style.display = isDayoff ? 'none' : 'block';
-    document.getElementById('vetRow').style.display = isDayoff ? 'flex' : 'none';
+    // staff picker: required for 休み (who's off), optional for その他
+    // (who a 面談/etc is with) — reuses the same multi-select staff list.
+    document.getElementById('vetRow').style.display = (isDayoff || isOther) ? 'flex' : 'none';
     document.getElementById('dayoffPeriodWrap').style.display = isDayoff ? 'block' : 'none';
+    // "面談" one-tap fill for その他's free-text content field.
+    document.getElementById('otherQuickRow').style.display = isOther ? 'flex' : 'none';
+
+    // Repeat (weekly, N weeks) only makes sense for 休み/診療日, and only
+    // when creating a brand-new entry — editing an existing one should just
+    // change that single entry, not spin off a new batch of repeats.
+    const supportsRepeat = (isDayoff || isClinic) && !editingId;
+    document.getElementById('fieldRepeat').style.display = supportsRepeat ? 'block' : 'none';
+    if(!supportsRepeat) pickedRepeatWeeks = 0;
 
     // "休み" already shows a "獣医師"/"看護師" group heading right below, so
     // the field label here would just be a redundant duplicate — hide it.
@@ -1606,6 +1605,36 @@
     renderClinicRow();
     renderTraineeKindRow();
     renderDayoffPeriodRow();
+    renderRepeatRow();
+    renderOtherQuickRow();
+  }
+
+  function renderOtherQuickRow(){
+    const row = document.getElementById('otherQuickRow');
+    if(!row) return;
+    row.innerHTML = '<span class="preset-chip" data-quick="面談">面談</span>';
+    const chip = row.querySelector('.preset-chip');
+    if(chip){
+      chip.addEventListener('click', ()=>{
+        document.getElementById('fLabel').value = '面談';
+      });
+    }
+  }
+
+  function renderRepeatRow(){
+    const row = document.getElementById('repeatRow');
+    if(!row) return;
+    const options = [{ weeks:0, label:'なし' }].concat(REPEAT_WEEK_OPTIONS.map(w=>({ weeks:w, label:w+'週' })));
+    row.innerHTML = options.map(o=>{
+      const sel = (o.weeks === pickedRepeatWeeks) ? ' sel' : '';
+      return '<span class="preset-chip'+sel+'" data-weeks="'+o.weeks+'">'+escapeHtml(o.label)+'</span>';
+    }).join('');
+    row.querySelectorAll('.preset-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        pickedRepeatWeeks = parseInt(chip.dataset.weeks, 10);
+        renderRepeatRow();
+      });
+    });
   }
 
   function renderDayoffPeriodRow(){
@@ -1656,7 +1685,7 @@
     const row = document.getElementById('vetRow');
     row.innerHTML = VET_GROUPS.map(group=>{
       const chips = group.names.map(v=>{
-        const sel = (v === pickedVet) ? ' sel' : '';
+        const sel = pickedVets.includes(v) ? ' sel' : '';
         return '<span class="preset-chip'+sel+'" data-vet="'+escapeHtml(v)+'">'+escapeHtml(v)+'</span>';
       }).join('');
       return '<div class="vet-group">'+
@@ -1667,7 +1696,13 @@
     row.querySelectorAll('.preset-chip').forEach(chip=>{
       chip.addEventListener('click', ()=>{
         const val = chip.dataset.vet;
-        pickedVet = (pickedVet === val) ? '' : val;
+        // toggle: several staff can be selected at once, so one action can
+        // register a day off for multiple people in one go.
+        if(pickedVets.includes(val)){
+          pickedVets = pickedVets.filter(v=>v!==val);
+        } else {
+          pickedVets.push(val);
+        }
         renderVetRow();
       });
     });
@@ -1689,25 +1724,30 @@
     });
   }
 
+  const PRESET_SEP = '・';
+
   function renderPresetRow(cat){
     const row = document.getElementById('presetRow');
     const list = PRESETS[cat];
     if(!list){ row.innerHTML = ''; return; }
-    const current = document.getElementById('fSub').value.trim();
+    const currentParts = document.getElementById('fSub').value.split(PRESET_SEP).map(s=>s.trim()).filter(Boolean);
     row.innerHTML = list.map(p=>{
-      const sel = (p === current) ? ' sel' : '';
+      const sel = currentParts.includes(p) ? ' sel' : '';
       return '<span class="preset-chip'+sel+'" data-val="'+escapeHtml(p)+'">'+escapeHtml(p)+'</span>';
     }).join('');
     row.querySelectorAll('.preset-chip').forEach(chip=>{
       chip.addEventListener('click', ()=>{
         const subInput = document.getElementById('fSub');
         const val = chip.dataset.val;
-        // toggle: clicking the already-selected preset clears it
-        if(subInput.value.trim() === val){
-          subInput.value = '';
+        let parts = subInput.value.split(PRESET_SEP).map(s=>s.trim()).filter(Boolean);
+        // toggle: add if not selected, remove if already selected — so
+        // several procedures/exams can be combined into one entry.
+        if(parts.includes(val)){
+          parts = parts.filter(p=>p!==val);
         } else {
-          subInput.value = val;
+          parts.push(val);
         }
+        subInput.value = parts.join(PRESET_SEP);
         renderPresetRow(pickedCat);
       });
     });
@@ -1735,10 +1775,11 @@
     document.getElementById('fMemo').value = '';
     document.getElementById('fTime').value = '';
     pickedSpecies = '';
-    pickedVet = '';
+    pickedVets = [];
     pickedClinic = '';
     pickedTraineeKind = '';
     pickedDayoffPeriod = '全日';
+    pickedRepeatWeeks = 0;
     setCat('surgery');
     showOverlay();
   }
@@ -1758,7 +1799,8 @@
     document.getElementById('fMemo').value = ev.memo || '';
     document.getElementById('fTime').value = ev.time || '';
     pickedSpecies = ev.species || '';
-    pickedVet = (ev.category === 'dayoff') ? (ev.label || '') : '';
+    pickedVets = (ev.category === 'dayoff' && ev.label) ? [ev.label]
+      : (ev.category === 'other' && ev.sub) ? ev.sub.split('・').map(s=>s.trim()).filter(Boolean) : [];
     pickedClinic = (ev.category === 'clinic') ? (ev.label || '') : '';
     pickedTraineeKind = (ev.category === 'training') ? (ev.traineeKind || '') : '';
     pickedDayoffPeriod = (ev.category === 'dayoff') ? (ev.dayoffPeriod || '全日') : '全日';
@@ -1819,149 +1861,16 @@
 
   function openManagePanel(){
     renderTrashList();
-    checkArchiveStatus();
     document.getElementById('manageOverlay').classList.add('show');
   }
   function closeManagePanel(){
     document.getElementById('manageOverlay').classList.remove('show');
   }
 
-  // ---------- archive old data to an external file, then remove from storage ----------
-  const LAST_ARCHIVE_KEY = 'last-archive-at';
-  const ARCHIVE_WARN_DAYS = 30;
-
-  async function getLastArchiveAt(){
-    try{
-      const res = await window.storage.get(LAST_ARCHIVE_KEY, true);
-      return res ? res.value : null;
-    }catch(e){ return null; }
-  }
-  async function setLastArchiveAt(){
-    try{ await window.storage.set(LAST_ARCHIVE_KEY, isoNow(), true); }catch(e){}
-  }
-  function daysSince(iso){
-    if(!iso) return Infinity;
-    const d = (Date.now() - new Date(iso).getTime()) / (24*60*60*1000);
-    return isNaN(d) ? Infinity : d;
-  }
   function fmtDate(iso){
     const d = new Date(iso);
     if(isNaN(d)) return '';
     return d.getFullYear()+'年'+(d.getMonth()+1)+'月'+d.getDate()+'日';
-  }
-
-  // Checks whether 1ヶ月（30日）以上 has passed since the last archive run,
-  // and reflects this both as a small dot on the header button (visible
-  // without opening the panel) and as a message inside the panel itself.
-  // Shared lookup: what's actually old enough to archive right now.
-  // Used both by the warning check (so it stays silent when there's simply
-  // nothing to do yet) and by the archive action itself.
-  async function findArchivableData(){
-    const cutoff = Date.now() - LOOKBACK_DAYS*24*60*60*1000;
-    const oldTrash = events.filter(e=>e.deleted && e.deletedAt && new Date(e.deletedAt).getTime() < cutoff);
-    return { cutoff, oldTrash };
-  }
-
-  async function checkArchiveStatus(){
-    const last = await getLastArchiveAt();
-    const days = daysSince(last);
-    const timeOverdue = days > ARCHIVE_WARN_DAYS;
-
-    // Only warn if there's actually something old enough to archive —
-    // otherwise the first 60 days of use would show a meaningless warning
-    // that trains people to ignore it before it ever matters.
-    let hasData = false;
-    if(timeOverdue){
-      const { oldTrash } = await findArchivableData();
-      hasData = oldTrash.length > 0;
-    }
-    const overdue = timeOverdue && hasData;
-
-    const dot = document.getElementById('manageWarnDot');
-    if(dot) dot.style.display = overdue ? 'block' : 'none';
-
-    const message = overdue ? ('⚠ ' + (last
-      ? '古いデータの整理（アーカイブ）が必要です。前回から'+Math.floor(days)+'日経っています。'
-      : '古いデータの整理（アーカイブ）がまだ一度も実行されていません。')) : '';
-
-    const banner = document.getElementById('archiveWarnBanner');
-    const bannerText = document.getElementById('archiveWarnText');
-    if(banner){
-      if(overdue){
-        bannerText.textContent = message;
-        banner.classList.add('show');
-      } else {
-        banner.classList.remove('show');
-      }
-    }
-
-    const warnEl = document.getElementById('archiveWarning');
-    const lastRunEl = document.getElementById('archiveLastRun');
-    if(warnEl){
-      if(overdue){
-        warnEl.textContent = message;
-        warnEl.style.display = 'block';
-      } else {
-        warnEl.style.display = 'none';
-      }
-    }
-    if(lastRunEl){
-      lastRunEl.textContent = last ? ('前回の実行：'+fmtDate(last)) : '';
-    }
-    return overdue;
-  }
-
-  async function archiveOldData(){
-    const { cutoff, oldTrash } = await findArchivableData();
-
-    if(oldTrash.length===0){
-      showToast('アーカイブ対象（60日より前に削除したもの）はまだありません。');
-      return;
-    }
-
-    const bundle = {
-      archivedAt: isoNow(),
-      cutoff: new Date(cutoff).toISOString(),
-      oldTrash
-    };
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type:'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'nyuta-schedule-archive_'+localStamp()+'.json';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    setTimeout(()=>URL.revokeObjectURL(url), 2000);
-
-    const ok = await showConfirm(
-      'アーカイブファイル（ゴミ箱'+oldTrash.length+'件）をダウンロードしました。\n\n'+
-      '保存先（ダウンロードフォルダ）に保存できたことを確認してから「OK」を押してください。OKを押すと、ダウンロードした分のデータをこのアプリの中から削除して軽くします。\n\n'+
-      'まだファイルの保存を確認していない場合は「キャンセル」を押してください（データはそのまま残ります）。'
-    );
-    if(!ok) return;
-
-    await refreshBeforeMutation();
-    const idsToRemove = new Set(oldTrash.map(e=>e.id));
-    events = events.filter(e=>!idsToRemove.has(e.id));
-    refreshAllChips();
-    renderTrashList();
-    await saveEvents();
-
-    await setLastArchiveAt();
-    await checkArchiveStatus();
-    showToast('アーカイブが完了しました。');
-  }
-
-  // ---------- export / import ----------
-  function localStamp(){
-    const d = new Date();
-    const y = d.getFullYear();
-    const m = pad(d.getMonth()+1);
-    const day = pad(d.getDate());
-    const hh = pad(d.getHours());
-    const mm = pad(d.getMinutes());
-    return y+'-'+m+'-'+day+'_'+hh+mm;
   }
 
   // ID generator with a fallback for environments where crypto.randomUUID
@@ -2017,12 +1926,19 @@
     if(isHandlingSave) return;
     isHandlingSave = true;
     const btn = document.getElementById('btnSave');
-    if(btn) btn.disabled = true;
+    const originalLabel = btn ? btn.innerHTML : '';
+    if(btn){
+      btn.disabled = true;
+      btn.innerHTML = '<span class="btn-spinner"></span>保存中…';
+    }
     try{
       await handleSaveInner();
     } finally {
       isHandlingSave = false;
-      if(btn) btn.disabled = false;
+      if(btn){
+        btn.disabled = false;
+        btn.innerHTML = originalLabel;
+      }
     }
   }
 
@@ -2031,12 +1947,35 @@
     const date = document.getElementById('fDate').value;
     if(!date){ showFormError('日付を選択してください'); return; }
 
-    let label;
-    if(pickedCat === 'dayoff'){ label = pickedVet; }
-    else if(pickedCat === 'clinic'){ label = pickedClinic; }
-    else { label = document.getElementById('fLabel').value.trim(); }
+    // Each "variant" is one entry's own {label, sub} — normally there's
+    // just one, but a few categories can fan out into several entries from
+    // a single save action:
+    //   - 休み: several staff selected at once → one entry per person
+    //     (label = staff name)
+    //   - その他: optional staff selection (e.g. for 面談) → one entry per
+    //     selected person, all sharing the SAME content (label = the typed
+    //     text such as "面談", sub = that person's name) — or, with nobody
+    //     selected, just the single free-text entry as before.
+    let variants;
+    if(pickedCat === 'dayoff'){
+      variants = pickedVets.map(v=>({ label:v, sub:'' }));
+    } else if(pickedCat === 'clinic'){
+      variants = pickedClinic ? [{ label:pickedClinic, sub:'' }] : [];
+    } else if(pickedCat === 'other'){
+      const content = document.getElementById('fLabel').value.trim();
+      // Unlike 休み (one entry per person), a 面談/その他 with several
+      // people selected is ONE event they all attend together — combine
+      // everyone into a single entry's sub field (e.g. "院長＋大辻＋齋藤")
+      // rather than creating a separate entry per person.
+      if(!content){ variants = []; }
+      else if(pickedVets.length > 0){ variants = [{ label:content, sub:pickedVets.join('・') }]; }
+      else { variants = [{ label:content, sub:'' }]; }
+    } else {
+      const v = document.getElementById('fLabel').value.trim();
+      variants = v ? [{ label:v, sub:'' }] : [];
+    }
 
-    if(!label){
+    if(variants.length === 0){
       showFormError(
         pickedCat==='dayoff' ? '獣医師を選んでください' :
         pickedCat==='clinic' ? '診療日ステータスを選んでください' :
@@ -2052,10 +1991,8 @@
     }
 
     const usesPatientFields = (pickedCat === 'surgery' || pickedCat === 'exam');
-    const data = {
-      date,
+    const baseData = {
       category: pickedCat,
-      label,
       sub: usesPatientFields ? document.getElementById('fSub').value.trim() : '',
       species: usesPatientFields ? pickedSpecies : '',
       time: (pickedCat === 'other') ? document.getElementById('fTime').value : '',
@@ -2076,7 +2013,12 @@
       if(oldDateIfEditing) touchedDates.push(oldDateIfEditing);
 
       let savedId;
+      let touchedLabel;
+
       if(editingId){
+        const { label, sub } = variants[0];
+        const data = Object.assign({}, baseData, { date, label });
+        if(sub) data.sub = sub; // 'other'-with-staff carries the person's name in sub
         const idx = events.findIndex(e=>e.id===editingId);
         if(idx>-1){
           events[idx] = Object.assign({}, events[idx], data, {id:editingId});
@@ -2085,24 +2027,59 @@
           events.push(Object.assign({id:editingId}, data));
         }
         savedId = editingId;
+        touchedLabel = label;
       } else {
-        savedId = makeId();
-        events.push(Object.assign({id: savedId}, data));
+        // New entries: expand across every selected person/variant AND
+        // every repeated week (both are optional — with neither, this is
+        // just the one entry it always used to be).
+        const weekOffsets = (pickedRepeatWeeks > 0)
+          ? Array.from({length: pickedRepeatWeeks}, (_,i)=>i)
+          : [0];
+        const baseDate = new Date(date+'T00:00:00');
+        let created = 0;
+        variants.forEach(({label, sub})=>{
+          weekOffsets.forEach(w=>{
+            const d = new Date(baseDate);
+            d.setDate(d.getDate() + w*7);
+            const dKey = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+            const id = makeId();
+            const entryData = Object.assign({}, baseData, { date:dKey, label });
+            if(sub) entryData.sub = sub;
+            events.push(Object.assign({id}, entryData));
+            if(!touchedDates.includes(dKey)) touchedDates.push(dKey);
+            if(created === 0) savedId = id;
+            created++;
+          });
+        });
+
+        const parts = [];
+        if(variants.length > 1) parts.push(variants.length+'件');
+        if(pickedRepeatWeeks > 0) parts.push(pickedRepeatWeeks+'週分');
+        const displayLabel = variants.length > 1
+          ? variants.map(v=>v.sub || v.label).join('・')
+          : variants[0].label;
+        touchedLabel = parts.length > 0 ? displayLabel + '（' + parts.join('・') + '）' : displayLabel;
       }
+
+      // Keep the modal open (with the "保存中…" button state) through the
+      // whole write — closing it immediately, before the network save had
+      // actually finished, made a still-in-progress save look complete,
+      // which is exactly what was inviting people to tap 保存 again
+      // "because nothing seemed to happen."
+      const ok = await saveEvents();
 
       hideOverlay();
       touchedDates.forEach(d=>fillChipsForDate(d));
-      showToast((editingId ? '更新しました：' : '追加しました：')+label);
 
-      const ok = await saveEvents();
       if(ok === false){
         showToast('⚠ 共有データへの保存に失敗しました。画面上部の「再試行」を押してください。', 5000);
       } else {
+        showToast((editingId ? '更新しました：' : '追加しました：')+touchedLabel);
         // Verify the save actually stuck: re-read shared data and confirm our
         // entry is present. If it isn't, another device likely overwrote it in
         // the same moment — warn so it can be re-entered, rather than letting
         // it silently vanish.
-        await verifySaveLanded(savedId, label);
+        await verifySaveLanded(savedId, touchedLabel);
       }
     }catch(e){
       console.error('handleSave error:', e);
@@ -2110,21 +2087,42 @@
     }
   }
 
+  let isHandlingDelete = false;
+
   async function handleDelete(){
     if(!editingId) return;
-    await refreshBeforeMutation();
-    refreshAllChips();
-    const ev = events.find(e=>e.id===editingId);
-    if(ev){
-      // Soft delete: move to trash instead of erasing, so an accidental
-      // delete (a serious problem for surgery/exam scheduling) can always
-      // be undone from the データ管理 panel for 60 days.
-      ev.deleted = true;
-      ev.deletedAt = isoNow();
+    if(isHandlingDelete) return;
+    isHandlingDelete = true;
+    const btn = document.getElementById('btnDelete');
+    const originalLabel = btn ? btn.innerHTML : '';
+    if(btn){
+      btn.disabled = true;
+      btn.innerHTML = '<span class="btn-spinner"></span>削除中…';
     }
-    hideOverlay();
-    if(ev) fillChipsForDate(ev.date);
-    await saveEvents();
+    try{
+      await refreshBeforeMutation();
+      refreshAllChips();
+      const ev = events.find(e=>e.id===editingId);
+      if(ev){
+        // Soft delete: move to trash instead of erasing, so an accidental
+        // delete (a serious problem for surgery/exam scheduling) can always
+        // be undone from the データ管理 panel for 60 days.
+        ev.deleted = true;
+        ev.deletedAt = isoNow();
+      }
+      const ok = await saveEvents();
+      hideOverlay();
+      if(ev) fillChipsForDate(ev.date);
+      if(ok === false){
+        showToast('⚠ 削除の保存に失敗しました。画面上部の「再試行」を押してください。', 5000);
+      }
+    } finally {
+      isHandlingDelete = false;
+      if(btn){
+        btn.disabled = false;
+        btn.innerHTML = originalLabel;
+      }
+    }
   }
 
   // ---------- init ----------
@@ -2134,7 +2132,6 @@
     renderLegend();
     await loadEvents();
     await maybeRecoverLocalFallback();
-    checkArchiveStatus();
 
     rangeStartSunday = sundayOf(addDays(new Date(), -14));
     recalcRowHeight();
@@ -2246,8 +2243,6 @@
       if(e.target.id === 'manageOverlay') closeManagePanel();
     });
     document.getElementById('btnChangePasscode').addEventListener('click', changePasscode);
-    document.getElementById('btnArchiveOld').addEventListener('click', archiveOldData);
-    document.getElementById('btnArchiveBannerOpen').addEventListener('click', openManagePanel);
 
     // load error banner: retry re-fetches from the backend and repaints.
     document.getElementById('btnRetryLoad').addEventListener('click', async ()=>{
@@ -2265,9 +2260,6 @@
       saveWithRetry(1);
     });
     document.getElementById('btnDismissSaveError').addEventListener('click', hideSaveErrorBanner);
-    document.getElementById('btnDismissArchiveWarn').addEventListener('click', ()=>{
-      document.getElementById('archiveWarnBanner').classList.remove('show');
-    });
   }
 
   // ---------- lock screen (passcode gate) ----------
