@@ -727,6 +727,10 @@
         <div class="vet-group-label period-label">時間帯</div>
         <div class="preset-row" id="dayoffPeriodRow" style="margin-top:0;"></div>
       </div>
+      <div id="markWrap" style="display:none;">
+        <div class="vet-group-label period-label">目印</div>
+        <div class="preset-row" id="markRow" style="margin-top:0;"></div>
+      </div>
     </div>
 
     <div class="field" id="fieldClinic" style="display:none;">
@@ -748,6 +752,19 @@
     <div class="field">
       <label id="labelMemo">メモ（任意）</label>
       <textarea id="fMemo" placeholder="補足事項があれば"></textarea>
+    </div>
+
+    <div class="field" id="fieldLemon" style="display:none;">
+      <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+        <input type="checkbox" id="fLemonEnable" style="width:16px; height:16px; margin:0;">
+        🍋 術前検査の期限も一緒に登録する
+      </label>
+      <div id="lemonDetail" style="display:none; margin-top:8px;">
+        <label>手術日の何日前か</label>
+        <div class="preset-row" id="lemonOffsetRow"></div>
+        <label style="margin-top:8px;">期限日（自動計算・手動でも変更可）</label>
+        <input type="date" id="fLemonDate">
+      </div>
     </div>
 
     <div class="field" id="fieldRepeat" style="display:none;">
@@ -1003,6 +1020,8 @@
   ];
   const DAYOFF_PERIODS = ['午前','午後','全日'];
   const REPEAT_WEEK_OPTIONS = [4, 8, 12];
+  const SURGERY_MARKS = ['', '🍎']; // '' = 無印
+  const LEMON_OFFSET_OPTIONS = [3, 5, 7, 10, 14];
 
   let events = [];               // [{id,date,category,time,vet,label,sub,room,species,memo}]
   let filters = { surgery:true, exam:true, other:true, dayoff:true };
@@ -1546,6 +1565,8 @@
   let pickedTraineeKind = '';
   let pickedDayoffPeriod = '全日';
   let pickedRepeatWeeks = 0; // 0 = no repeat (single entry only)
+  let pickedMark = ''; // '' or '🍎', surgery-only
+  let pickedLemonOffset = 7;
 
   function setCat(cat){
     pickedCat = cat;
@@ -1556,6 +1577,7 @@
     const isClinic = cat === 'clinic';
     const isTraining = cat === 'training';
     const isOther = cat === 'other';
+    const isSurgery = cat === 'surgery';
     // "training" and "other" both use a single free-text label field with no
     // species / sub / preset rows.
     const simpleLabelOnly = (isOther || isTraining);
@@ -1599,6 +1621,14 @@
       isTraining ? '例）〇〇大学 田中さん' :
       isOther ? '例）ワクチン説明会' : '例）ポチ';
     document.getElementById('fSub').placeholder = (cat === 'exam') ? '例）心エコー' : '例）避妊手術';
+
+    // オペ-only extras: chart-prep mark (無印/🍎) and the optional 術前検査
+    // 期限（🍋）companion reminder — the mark only for surgery at all, and
+    // the lemon-reminder option only when creating a brand-new booking.
+    document.getElementById('markWrap').style.display = isSurgery ? 'block' : 'none';
+    document.getElementById('fieldLemon').style.display = (isSurgery && !editingId) ? 'block' : 'none';
+    if(!isSurgery) pickedMark = '';
+
     renderPresetRow(cat);
     renderSpeciesRow();
     renderVetRow();
@@ -1607,6 +1637,49 @@
     renderDayoffPeriodRow();
     renderRepeatRow();
     renderOtherQuickRow();
+    renderMarkRow();
+    renderLemonOffsetRow();
+  }
+
+  function renderMarkRow(){
+    const row = document.getElementById('markRow');
+    if(!row) return;
+    row.innerHTML = SURGERY_MARKS.map(m=>{
+      const sel = (m === pickedMark) ? ' sel' : '';
+      const label = m || '無印';
+      return '<span class="preset-chip'+sel+'" data-mark="'+escapeHtml(m)+'">'+escapeHtml(label)+'</span>';
+    }).join('');
+    row.querySelectorAll('.preset-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        pickedMark = chip.dataset.mark;
+        renderMarkRow();
+      });
+    });
+  }
+
+  function recalcLemonDate(){
+    const dateInput = document.getElementById('fDate');
+    const lemonInput = document.getElementById('fLemonDate');
+    if(!dateInput.value) return;
+    const d = new Date(dateInput.value+'T00:00:00');
+    d.setDate(d.getDate() - pickedLemonOffset);
+    lemonInput.value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  function renderLemonOffsetRow(){
+    const row = document.getElementById('lemonOffsetRow');
+    if(!row) return;
+    row.innerHTML = LEMON_OFFSET_OPTIONS.map(n=>{
+      const sel = (n === pickedLemonOffset) ? ' sel' : '';
+      return '<span class="preset-chip'+sel+'" data-offset="'+n+'">'+n+'日前</span>';
+    }).join('');
+    row.querySelectorAll('.preset-chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        pickedLemonOffset = parseInt(chip.dataset.offset, 10);
+        renderLemonOffsetRow();
+        recalcLemonDate();
+      });
+    });
   }
 
   function renderOtherQuickRow(){
@@ -1780,6 +1853,11 @@
     pickedTraineeKind = '';
     pickedDayoffPeriod = '全日';
     pickedRepeatWeeks = 0;
+    pickedMark = '';
+    pickedLemonOffset = 7;
+    document.getElementById('fLemonEnable').checked = false;
+    document.getElementById('lemonDetail').style.display = 'none';
+    document.getElementById('fLemonDate').value = '';
     setCat('surgery');
     showOverlay();
   }
@@ -1794,7 +1872,17 @@
     document.getElementById('fDate').value = ev.date;
     document.getElementById('fDate').style.display = 'block';
     document.getElementById('fDateStatic').style.display = 'none';
-    document.getElementById('fLabel').value = ev.label || '';
+    // A surgery entry's label may carry a "🍎 " chart-prep mark as a
+    // prefix — split it back out so the mark buttons and the plain patient
+    // name both restore correctly.
+    let editLabel = ev.label || '';
+    let editMark = '';
+    if(ev.category === 'surgery' && editLabel.startsWith('🍎')){
+      editMark = '🍎';
+      editLabel = editLabel.replace(/^🍎\s*/, '');
+    }
+    document.getElementById('fLabel').value = editLabel;
+    pickedMark = editMark;
     document.getElementById('fSub').value = ev.sub || '';
     document.getElementById('fMemo').value = ev.memo || '';
     document.getElementById('fTime').value = ev.time || '';
@@ -1972,7 +2060,13 @@
       else { variants = [{ label:content, sub:'' }]; }
     } else {
       const v = document.getElementById('fLabel').value.trim();
-      variants = v ? [{ label:v, sub:'' }] : [];
+      if(!v){ variants = []; }
+      else if(pickedCat === 'surgery' && pickedMark){
+        // Chart-prep mark (🍎) is a visual prefix on the patient name.
+        variants = [{ label: pickedMark+' '+v, sub:'' }];
+      } else {
+        variants = [{ label:v, sub:'' }];
+      }
     }
 
     if(variants.length === 0){
@@ -2059,6 +2153,26 @@
           ? variants.map(v=>v.sub || v.label).join('・')
           : variants[0].label;
         touchedLabel = parts.length > 0 ? displayLabel + '（' + parts.join('・') + '）' : displayLabel;
+
+        // Optional 🍋 companion reminder: same patient/content, but on the
+        // pre-op exam deadline date (surgery date minus N days), created
+        // only when explicitly opted in — a surgery being booked doesn't
+        // always need one (e.g. the pre-op exam may already be done).
+        if(pickedCat === 'surgery' && document.getElementById('fLemonEnable').checked){
+          const lemonDateStr = document.getElementById('fLemonDate').value;
+          if(lemonDateStr){
+            const lemonLabel = '🍋 '+variants[0].label.replace(/^🍎\s*/, '');
+            const lemonId = makeId();
+            events.push(Object.assign({}, baseData, {
+              id: lemonId,
+              date: lemonDateStr,
+              label: lemonLabel,
+              sub: baseData.sub ? baseData.sub+'（術前検査期限）' : '術前検査期限'
+            }));
+            if(!touchedDates.includes(lemonDateStr)) touchedDates.push(lemonDateStr);
+            touchedLabel += '＋🍋期限も登録';
+          }
+        }
       }
 
       // Keep the modal open (with the "保存中…" button state) through the
@@ -2228,6 +2342,13 @@
     document.getElementById('btnCancel').addEventListener('click', hideOverlay);
     document.getElementById('btnSave').addEventListener('click', handleSave);
     document.getElementById('btnDelete').addEventListener('click', handleDelete);
+    document.getElementById('fLemonEnable').addEventListener('change', (e)=>{
+      document.getElementById('lemonDetail').style.display = e.target.checked ? 'block' : 'none';
+      if(e.target.checked) recalcLemonDate();
+    });
+    document.getElementById('fDate').addEventListener('change', ()=>{
+      if(document.getElementById('fLemonEnable').checked) recalcLemonDate();
+    });
     document.getElementById('overlay').addEventListener('click', (e)=>{
       if(e.target.id === 'overlay') hideOverlay();
     });
