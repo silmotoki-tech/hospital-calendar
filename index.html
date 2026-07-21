@@ -889,9 +889,26 @@
     return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
   }
 
+  // Same Google Sheets auto-conversion problem as the date field, but for a
+  // bare time-of-day like "08:30": Sheets silently turns it into a Time
+  // serial value, which Apps Script then reads back as a full datetime
+  // anchored on the Sheets/Excel epoch (1899-12-30). We pull the "HH:mm"
+  // straight out of that string with a regex rather than going through a
+  // Date/timezone conversion — a pure time-of-day has no real calendar date
+  // attached, so there's no correct timezone shift to apply; the UTC
+  // hour:minute embedded in the leaked string IS the originally-entered time.
+  function normalizeEventTime_(timeValue){
+    if(typeof timeValue !== 'string' || !timeValue.includes('T')) return timeValue;
+    const m = timeValue.match(/T(\d{2}:\d{2})/);
+    return m ? m[1] : '';
+  }
+
   async function gasGetAllEvents(){
     const data = await gasFetchJson(GAS_URL, { method:'GET' });
-    const events = (data.events || []).map(ev=>Object.assign({}, ev, { date: normalizeEventDate_(ev.date) }));
+    const events = (data.events || []).map(ev=>Object.assign({}, ev, {
+      date: normalizeEventDate_(ev.date),
+      time: normalizeEventTime_(ev.time)
+    }));
     lastKnownRemoteEvents = events;
     return events;
   }
